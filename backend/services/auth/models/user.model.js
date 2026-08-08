@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
-  firebaseuid: {
+  firebaseUid: {
     type: String,
     required: true,
     unique: true,
