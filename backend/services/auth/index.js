@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import cors from "cors";
-
+import "./config/redis.js";
 dotenv.config();
 
 const app = express();
