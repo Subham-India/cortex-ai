@@ -1,150 +1,254 @@
-import { useSelector } from "react-redux";
+import { useState } from "react";
+import axios from "axios";
 
-function Home() {
-  const { user } = useSelector((state) => state.auth);
+/* --- Inline icon components --- */
+const Icon = ({ children, size = 18 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {children}
+  </svg>
+);
+
+const PanelLeft = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 3v18" />
+  </Icon>
+);
+const Plus = (p) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
+const GitBranch = (p) => (
+  <Icon {...p}>
+    <line x1="6" y1="3" x2="6" y2="15" />
+    <circle cx="18" cy="6" r="3" />
+    <circle cx="6" cy="18" r="3" />
+    <path d="M18 9a9 9 0 0 1-9 9" />
+  </Icon>
+);
+const LayoutGrid = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+  </Icon>
+);
+const Paperclip = (p) => (
+  <Icon {...p}>
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+  </Icon>
+);
+const Search = (p) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </Icon>
+);
+const Lightbulb = (p) => (
+  <Icon {...p}>
+    <path d="M9 18h6" />
+    <path d="M10 22h4" />
+    <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z" />
+  </Icon>
+);
+const MoreHorizontal = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="19" cy="12" r="1" />
+    <circle cx="5" cy="12" r="1" />
+  </Icon>
+);
+const ArrowUp = (p) => (
+  <Icon {...p}>
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </Icon>
+);
+
+const Home = () => {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!message.trim() || loading) return;
+
+    const userMessage = message;
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post("http://localhost:8002/api/chat", {
+        message: userMessage,
+      });
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: response.data.response },
+      ]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, something went wrong." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasMessages = messages.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen flex bg-[#f4f4f2]">
+      {/* Sidebar */}
+      <aside className="w-14 flex flex-col items-center py-4 gap-3 border-r border-black/5">
+        <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 text-gray-600">
+          <PanelLeft size={18} />
+        </button>
+        <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-black text-white">
+          <Plus size={18} />
+        </button>
+        <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 text-gray-600">
+          <GitBranch size={18} />
+        </button>
+        <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 text-gray-600">
+          <LayoutGrid size={18} />
+        </button>
+      </aside>
 
-      {/* Navbar */}
-      <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center font-bold">
-              C
-            </div>
-
-            <span className="text-xl font-bold">
-              Cortex AI
-            </span>
-          </div>
-
-          {/* User */}
-          <div className="flex items-center gap-3">
-            {user?.avatar && (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-9 h-9 rounded-full border border-slate-700"
-              />
-            )}
-
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium">
-                {user?.name}
-              </p>
-
-              <p className="text-xs text-slate-500">
-                {user?.email}
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </nav>
-
-      {/* Main */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
-
-        {/* Welcome */}
-        <div className="mb-10">
-          <p className="text-purple-400 text-sm font-medium mb-2">
-            AI WORKSPACE
-          </p>
-
-          <h1 className="text-4xl font-bold">
-            Welcome back, {user?.name?.split(" ")[0]} 👋
-          </h1>
-
-          <p className="text-slate-400 mt-3">
-            Build powerful AI agents and intelligent workflows.
-          </p>
-        </div>
-
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {/* Agents */}
-          <div className="group bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl mb-5">
-              🤖
-            </div>
-
-            <h2 className="text-xl font-semibold">
-              AI Agents
-            </h2>
-
-            <p className="text-slate-400 text-sm mt-2">
-              Create and manage intelligent AI agents.
-            </p>
-
-            <button className="mt-6 text-sm text-purple-400 hover:text-purple-300">
-              Explore agents →
-            </button>
-          </div>
-
-          {/* Knowledge */}
-          <div className="group bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/50 transition">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-2xl mb-5">
-              🧠
-            </div>
-
-            <h2 className="text-xl font-semibold">
-              Knowledge Base
-            </h2>
-
-            <p className="text-slate-400 text-sm mt-2">
-              Upload documents and build your RAG knowledge base.
-            </p>
-
-            <button className="mt-6 text-sm text-blue-400 hover:text-blue-300">
-              Manage knowledge →
-            </button>
-          </div>
-
-          {/* Projects */}
-          <div className="group bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-green-500/50 transition">
-            <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-2xl mb-5">
-              ⚡
-            </div>
-
-            <h2 className="text-xl font-semibold">
-              Projects
-            </h2>
-
-            <p className="text-slate-400 text-sm mt-2">
-              Organize your AI applications and workflows.
-            </p>
-
-            <button className="mt-6 text-sm text-green-400 hover:text-green-300">
-              View projects →
-            </button>
-          </div>
-
-        </div>
-
-        {/* Getting Started */}
-        <div className="mt-10 bg-gradient-to-r from-slate-900 to-slate-900/50 border border-slate-800 rounded-2xl p-8">
-
-          <h2 className="text-2xl font-semibold">
-            Get started with Cortex AI
-          </h2>
-
-          <p className="text-slate-400 mt-2">
-            Create your first AI agent and connect it to your knowledge base.
-          </p>
-
-          <button className="mt-6 px-5 py-3 rounded-xl bg-white text-slate-900 font-medium hover:bg-slate-200 transition">
-            Create your first agent
+      {/* Main area */}
+      <div className="flex-1 flex flex-col relative">
+        {/* Top right */}
+        <div className="absolute top-4 right-6 flex items-center gap-3 z-10">
+          <div className="w-8 h-8 rounded-full bg-gray-300" />
+          <button className="px-4 py-2 rounded-full bg-black text-white text-sm font-medium">
+            Get Pro
           </button>
-
         </div>
 
-      </main>
+        {hasMessages ? (
+          <main className="flex-1 overflow-y-auto px-6 pt-20 pb-40">
+            <div className="max-w-3xl mx-auto space-y-6">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}
+                >
+                  <div
+                    className={
+                      msg.role === "user"
+                        ? "max-w-[75%] rounded-2xl px-4 py-3 bg-black text-white"
+                        : "max-w-[75%] px-4 py-3"
+                    }
+                  >
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
+                </div>
+              ))}
+              {loading && <div className="text-gray-500">Thinking...</div>}
+            </div>
+
+            <div className="fixed bottom-6 left-14 right-0 px-6">
+              <div className="max-w-2xl mx-auto">
+                <ChatInput
+                  message={message}
+                  setMessage={setMessage}
+                  sendMessage={sendMessage}
+                  loading={loading}
+                />
+              </div>
+            </div>
+          </main>
+        ) : (
+          <main className="flex-1 flex flex-col items-center justify-center px-6">
+            <h1 className="text-3xl font-semibold text-gray-900 mb-6">
+              What can I help with?
+            </h1>
+
+            <div className="w-full max-w-2xl">
+              <ChatInput
+                message={message}
+                setMessage={setMessage}
+                sendMessage={sendMessage}
+                loading={loading}
+              />
+            </div>
+
+            <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-2 px-4">
+              <div className="bg-white/80 backdrop-blur border border-black/5 rounded-lg px-4 py-2 text-center shadow-sm">
+                <p className="text-sm text-gray-800">
+                  You've hit the Free plan limit for Crawl-4o.{" "}
+                  <span className="font-medium">Subscribe to Pro plan to increase limits.</span>
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Responses will use another model until your limit resets after 8:35 PM.
+                </p>
+              </div>
+              <p className="text-xs text-gray-500">
+                AI can make mistakes. Please double-check responses.
+              </p>
+            </div>
+          </main>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+const ChatInput = ({ message, setMessage, sendMessage, loading }) => {
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-3">
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") sendMessage();
+        }}
+        placeholder="Ask anything"
+        className="w-full px-2 py-2 outline-none text-[15px] placeholder:text-gray-400"
+      />
+
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-2">
+          <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
+            <Paperclip size={16} />
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-gray-100 text-sm text-gray-700">
+            <Search size={14} />
+            Deep Search
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-gray-100 text-sm text-gray-700">
+            <Lightbulb size={14} />
+            Reason
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
+            <MoreHorizontal size={16} />
+          </button>
+        </div>
+
+        <button
+          onClick={sendMessage}
+          disabled={loading}
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-black text-white disabled:opacity-50 hover:bg-gray-800"
+        >
+          <ArrowUp size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default Home;
