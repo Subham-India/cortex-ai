@@ -7,7 +7,7 @@ import chatRoutes from "./routes/chat.routes.js";
 
 const app = express();
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT;
 
 // Middleware
 app.use(cors());
