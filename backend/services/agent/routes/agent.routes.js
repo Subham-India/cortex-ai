@@ -1,7 +1,8 @@
-const express = require('express');
+import express from "express";
+import { runAgentController } from "../controllers/agent.controller.js";
+
 const router = express.Router();
-const { handleRun } = require('../controllers/agent.controller');
 
-router.post('/run', handleRun);
+router.post("/run", runAgentController);
 
-module.exports = router;
+export default router;

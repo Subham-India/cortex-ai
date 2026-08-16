@@ -1,20 +1,29 @@
-import gemini from "../../llms/gemini/gemini.client.js";
+import groq from "../../llms/groq/groq.client.js";
 
 const chatAgent = async (messages) => {
   try {
-    const response = await gemini.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: messages.map((message) => ({
-        role: message.role === "assistant" ? "model" : "user",
-        parts: [
-          {
-            text: message.content,
-          },
-        ],
-      })),
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful AI assistant.",
+        },
+
+        ...messages.map((message) => ({
+          role: message.role === "assistant"
+            ? "assistant"
+            : "user",
+          content: message.content,
+        })),
+      ],
+
+      temperature: 0.7,
     });
 
-    return response.text;
+    return completion.choices[0].message.content;
+
   } catch (error) {
     console.error("Chat Agent Error:", error);
     throw error;

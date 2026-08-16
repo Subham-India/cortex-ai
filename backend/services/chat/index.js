@@ -1,31 +1,56 @@
-import "dotenv/config";
-
 import express from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 
+import connectDB from "./config/db.js";
 import chatRoutes from "./routes/chat.routes.js";
+import conversationRoutes from "./routes/conversation.routes.js";
+
+dotenv.config();
 
 const app = express();
 
-const PORT = process.env.PORT;
+/* =========================
+   CORS
+========================= */
 
-// Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+/* =========================
+   Middleware
+========================= */
+
 app.use(express.json());
 
-// Health check
-app.get("/health", (req, res) => {
-  res.json({
-    success: true,
-    service: "chat-service",
-    status: "running"
-  });
-});
+/* =========================
+   Database
+========================= */
 
-// Chat routes
+connectDB();
+
+/* =========================
+   Routes
+========================= */
+
 app.use("/api/chat", chatRoutes);
 
-// Start server
+app.use(
+  "/api/chat/conversations",
+  conversationRoutes
+);
+
+/* =========================
+   Server
+========================= */
+
+const PORT = process.env.PORT || 8002;
+
 app.listen(PORT, () => {
   console.log(`Chat Service running on port ${PORT}`);
 });

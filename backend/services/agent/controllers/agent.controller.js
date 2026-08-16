@@ -1,14 +1,41 @@
-const AgentService = require('../services/agent.service');
+import runAgent from "../services/agent.service.js";
 
-async function handleRun(req, res) {
-  const svc = new AgentService();
-  const { agent, payload } = req.body || {};
+export const runAgentController = async (req, res) => {
   try {
-    const out = await svc.run(agent, payload);
-    res.json(out);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+    const {
+      userId,
+      conversationId,
+      message,
+      messages,
+    } = req.body;
 
-module.exports = { handleRun };
+    if (!message) {
+      return res.status(400).json({
+        success: false,
+        message: "Message is required",
+      });
+    }
+
+    const result = await runAgent({
+      userId,
+      conversationId,
+      userMessage: message,
+      messages,
+    });
+
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+
+  } catch (error) {
+
+    console.error("Agent Controller Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Agent service failed",
+      error: error.message,
+    });
+  }
+};
