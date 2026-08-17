@@ -6,7 +6,6 @@ const runAgent = async ({
   userMessage,
   messages = [],
 }) => {
-
   const result = await agentGraph.invoke({
     userId,
     conversationId,
@@ -16,6 +15,7 @@ const runAgent = async ({
 
   return {
     response: result.response,
+    type: result.type, // NEW
     selectedAgent: result.selectedAgent,
     searchResults: result.searchResults || [],
   };

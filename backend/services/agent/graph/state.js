@@ -1,5 +1,3 @@
-// graph/state.js
-
 import { Annotation } from "@langchain/langgraph";
 
 export const AgentState = Annotation.Root({
@@ -36,6 +34,12 @@ export const AgentState = Annotation.Root({
   response: Annotation({
     reducer: (_, value) => value,
     default: () => null,
+  }),
+
+  // NEW
+  type: Annotation({
+    reducer: (_, value) => value,
+    default: () => "text",
   }),
 
   error: Annotation({

@@ -11,6 +11,23 @@ Available agents:
 
 - chat: normal conversation, explanations, general questions
 - search: latest information, news, current events, web research
+- photo: image generation requests, creating pictures, generating images from prompts
+
+Examples:
+
+"Hello, how are you?" → chat
+"Explain recursion in Python" → chat
+"What is React?" → chat
+
+"What is the latest news about AI?" → search
+"Search the web for the latest NVIDIA news" → search
+"What happened today in India?" → search
+
+"Create an image of a futuristic city" → photo
+"Generate a picture of a cat" → photo
+"Make a realistic photo of a mountain" → photo
+"Create a cyberpunk wallpaper" → photo
+"Generate an image of a car" → photo
 
 User request:
 ${userMessage}
@@ -19,16 +36,18 @@ Return ONLY one word:
 chat
 OR
 search
+OR
+photo
 `;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-20b",
 
       messages: [
         {
           role: "system",
           content:
-            "You are a routing agent. Return only 'chat' or 'search'.",
+            "You are a routing agent. Return only 'chat', 'search', or 'photo'.",
         },
         {
           role: "user",
@@ -44,6 +63,10 @@ search
       .toLowerCase();
 
     console.log("Router Result:", result);
+
+    if (result.includes("photo")) {
+      return "photo";
+    }
 
     if (result.includes("search")) {
       return "search";

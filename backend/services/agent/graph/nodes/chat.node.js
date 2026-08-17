@@ -2,7 +2,10 @@ import chatAgent from "../../agents/chat/chat.agent.js";
 
 const chatNode = async (state) => {
   try {
+    const history = state.messages || [];
+
     const response = await chatAgent([
+      ...history,
       {
         role: "user",
         content: state.userMessage,
