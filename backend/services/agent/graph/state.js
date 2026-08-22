@@ -1,6 +1,7 @@
 import { Annotation } from "@langchain/langgraph";
 
 export const AgentState = Annotation.Root({
+
   userId: Annotation({
     reducer: (_, value) => value,
     default: () => null,
@@ -36,10 +37,26 @@ export const AgentState = Annotation.Root({
     default: () => null,
   }),
 
-  // NEW
+  // Response type
   type: Annotation({
     reducer: (_, value) => value,
     default: () => "text",
+  }),
+
+  // Photo Agent
+  image: Annotation({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
+
+  publicId: Annotation({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
+
+  prompt: Annotation({
+    reducer: (_, value) => value,
+    default: () => null,
   }),
 
   error: Annotation({

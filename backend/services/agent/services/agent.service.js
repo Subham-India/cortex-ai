@@ -15,9 +15,23 @@ const runAgent = async ({
 
   return {
     response: result.response,
-    type: result.type, // NEW
+
+    // Response type
+    type: result.type,
+
+    // Selected agent
     selectedAgent: result.selectedAgent,
+
+    // Search results
     searchResults: result.searchResults || [],
+
+    // Photo Agent
+    image: result.image || null,
+    publicId: result.publicId || null,
+    prompt: result.prompt || null,
+
+    // Error
+    error: result.error || null,
   };
 };
 

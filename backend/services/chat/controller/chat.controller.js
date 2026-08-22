@@ -86,10 +86,10 @@ export const sendMessage = async (req, res) => {
     console.log("Agent Result:", result);
 
     // -------------------------
-    // 6. Check AI response
+    // 6. Validate AI response
     // -------------------------
 
-    if (!result || !result.response) {
+    if (!result) {
       throw new Error("Agent returned no response");
     }
 
@@ -97,11 +97,23 @@ export const sendMessage = async (req, res) => {
     // 7. Save AI message
     // -------------------------
 
-    await Message.create({
-      conversationId,
-      role: "assistant",
-      content: result.response,
-    });
+    if (result.type === "image") {
+      await Message.create({
+        conversationId,
+        role: "assistant",
+        content: result.image,
+      });
+    } else {
+      if (!result.response) {
+        throw new Error("Agent returned no text response");
+      }
+
+      await Message.create({
+        conversationId,
+        role: "assistant",
+        content: result.response,
+      });
+    }
 
     // -------------------------
     // 8. Update conversation
@@ -117,14 +129,25 @@ export const sendMessage = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      response: result.response,
+
+      response: result.response || null,
+
+      type: result.type || "text",
+
+      image: result.image || null,
+
+      publicId: result.publicId || null,
+
+      prompt: result.prompt || null,
+
       selectedAgent: result.selectedAgent,
+
       searchResults: result.searchResults || [],
+
       conversationId,
     });
 
   } catch (error) {
-
     console.error("Chat Controller Error:", error);
 
     return res.status(500).json({

@@ -1,0 +1,25 @@
+{
+  "name": "cortex-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n GATEWAY,AUTH,CHAT,AGENT,FRONTEND -c blue,green,yellow,cyan,magenta \"npm run dev --prefix backend/gateway\" \"npm run dev --prefix backend/services/auth\" \"npm run dev --prefix backend/services/chat\" \"npm run dev --prefix backend/services/agent\" \"npm run dev --prefix frontend\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Subham-India/cortex-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Subham-India/cortex-ai/issues"
+  },
+  "homepage": "https://github.com/Subham-India/cortex-ai#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

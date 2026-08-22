@@ -28,11 +28,6 @@ export const useConversations = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* --------------------------------
-     Get a fresh Firebase ID token
-     right before each API call
-  -------------------------------- */
-
   const getToken = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return null;
@@ -113,6 +108,7 @@ export const useConversations = () => {
     if (!message.trim() || loading) return;
 
     const token = await getToken();
+
     if (!token || !user) {
       alert("User not authenticated");
       return;
@@ -122,6 +118,7 @@ export const useConversations = () => {
 
     if (!conversationId) {
       conversationId = await createNewConversation();
+
       if (!conversationId) {
         alert("Could not create conversation");
         return;
@@ -130,23 +127,53 @@ export const useConversations = () => {
 
     const userMessage = message.trim();
 
-    dispatch(addMessage({ role: "user", content: userMessage }));
+    dispatch(
+      addMessage({
+        role: "user",
+        content: userMessage,
+        type: "text",
+      })
+    );
+
     setMessage("");
     setLoading(true);
 
     try {
       const freshToken = await getToken();
-      const data = await sendMessageApi(conversationId, userMessage, user.id, freshToken);
+
+      const data = await sendMessageApi(
+        conversationId,
+        userMessage,
+        user.id,
+        freshToken
+      );
 
       if (!data.success) {
         throw new Error(data.message || "Failed to generate response");
       }
 
-      dispatch(addMessage({ role: "assistant", content: data.response }));
+      dispatch(
+        addMessage({
+          role: "assistant",
+          content: data.response || "",
+          type: data.type || "text",
+          image: data.image || null,
+          publicId: data.publicId || null,
+          prompt: data.prompt || null,
+        })
+      );
+
       await loadConversations();
     } catch (error) {
       console.error("Chat error:", error.response?.data || error.message);
-      dispatch(addMessage({ role: "assistant", content: "Sorry, something went wrong." }));
+
+      dispatch(
+        addMessage({
+          role: "assistant",
+          content: "Sorry, something went wrong.",
+          type: "text",
+        })
+      );
     } finally {
       setLoading(false);
     }
@@ -181,4 +208,86 @@ export const useConversations = () => {
     sendMessage,
     handleDeleteConversation,
   };
+};
+const sendMessage = async () => {
+  if (!message.trim() || loading) return;
+
+  const token = await getToken();
+
+  if (!token || !user) {
+    alert("User not authenticated");
+    return;
+  }
+
+  let conversationId = currentConversationId;
+
+  if (!conversationId) {
+    conversationId = await createNewConversation();
+
+    if (!conversationId) {
+      alert("Could not create conversation");
+      return;
+    }
+  }
+
+  const userMessage = message.trim();
+
+  dispatch(
+    addMessage({
+      role: "user",
+      content: userMessage,
+      type: "text",
+    })
+  );
+
+  setMessage("");
+  setLoading(true);
+
+  try {
+    const freshToken = await getToken();
+
+    const data = await sendMessageApi(
+      conversationId,
+      userMessage,
+      user.id,
+      freshToken
+    );
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to generate response");
+    }
+
+    // -------------------------
+    // Assistant response
+    // -------------------------
+
+    dispatch(
+      addMessage({
+        role: "assistant",
+        content: data.response || "",
+        type: data.type || "text",
+        image: data.image || null,
+        publicId: data.publicId || null,
+        prompt: data.prompt || null,
+      })
+    );
+
+    await loadConversations();
+
+  } catch (error) {
+    console.error(
+      "Chat error:",
+      error.response?.data || error.message
+    );
+
+    dispatch(
+      addMessage({
+        role: "assistant",
+        content: "Sorry, something went wrong.",
+        type: "text",
+      })
+    );
+  } finally {
+    setLoading(false);
+  }
 };

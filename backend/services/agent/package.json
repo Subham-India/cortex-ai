@@ -12,15 +12,19 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1115.0",
+    "@aws-sdk/lib-storage": "^3.1115.0",
     "@google/genai": "^1.0.0",
     "@huggingface/inference": "^4.13.27",
     "@langchain/core": "^1.2.6",
     "@langchain/langgraph": "^1.4.9",
     "@tavily/core": "^0.7.7",
+    "cloudinary": "^2.10.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "groq-sdk": "^0.37.0"
+    "groq-sdk": "^0.37.0",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
