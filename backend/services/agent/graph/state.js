@@ -2,65 +2,71 @@ import { Annotation } from "@langchain/langgraph";
 
 export const AgentState = Annotation.Root({
 
-  userId: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    userId: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  conversationId: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    conversationId: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  userMessage: Annotation({
-    reducer: (_, value) => value,
-    default: () => "",
-  }),
+    // RAG document ID
+    documentId: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  selectedAgent: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    userMessage: Annotation({
+        reducer: (_, value) => value,
+        default: () => "",
+    }),
 
-  messages: Annotation({
-    reducer: (current, update) => [...current, ...update],
-    default: () => [],
-  }),
+    selectedAgent: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  searchResults: Annotation({
-    reducer: (_, value) => value,
-    default: () => [],
-  }),
+    messages: Annotation({
+        reducer: (current, update) => [...current, ...update],
+        default: () => [],
+    }),
 
-  response: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    searchResults: Annotation({
+        reducer: (_, value) => value,
+        default: () => [],
+    }),
 
-  // Response type
-  type: Annotation({
-    reducer: (_, value) => value,
-    default: () => "text",
-  }),
+    response: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  // Photo Agent
-  image: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    // Response type
+    type: Annotation({
+        reducer: (_, value) => value,
+        default: () => "text",
+    }),
 
-  publicId: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    // Photo Agent
+    image: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  prompt: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    publicId: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 
-  error: Annotation({
-    reducer: (_, value) => value,
-    default: () => null,
-  }),
+    prompt: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
+
+    error: Annotation({
+        reducer: (_, value) => value,
+        default: () => null,
+    }),
 });

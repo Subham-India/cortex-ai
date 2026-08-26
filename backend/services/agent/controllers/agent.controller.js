@@ -7,6 +7,7 @@ export const runAgentController = async (req, res) => {
       conversationId,
       message,
       messages,
+      documentId,
     } = req.body;
 
     if (!message) {
@@ -21,6 +22,7 @@ export const runAgentController = async (req, res) => {
       conversationId,
       userMessage: message,
       messages,
+      documentId: documentId || null,
     });
 
     return res.status(200).json({

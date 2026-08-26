@@ -5,12 +5,21 @@ const runAgent = async ({
   conversationId,
   userMessage,
   messages = [],
+  documentId = null,
 }) => {
+
   const result = await agentGraph.invoke({
+
     userId,
+
     conversationId,
+
     userMessage,
+
     messages,
+
+    // RAG document ID
+    documentId,
   });
 
   return {
@@ -22,7 +31,10 @@ const runAgent = async ({
     // Selected agent
     selectedAgent: result.selectedAgent,
 
-    // Search results
+    // RAG document ID
+    documentId: result.documentId || null,
+
+    // Search results / RAG sources
     searchResults: result.searchResults || [],
 
     // Photo Agent

@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import agentRoutes from "./routes/agent.routes.js";
+import ragRouter from "./routes/rag.js";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/agent", agentRoutes);
+app.use("/api", ragRouter);
 
 app.get("/health", (req, res) => {
   res.json({
