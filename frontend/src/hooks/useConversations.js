@@ -6,6 +6,7 @@ import {
   getConversations,
   getMessages,
   sendMessage as sendMessageApi,
+  askAgent,
   deleteConversation,
 } from "../services/chatService";
 import {
@@ -27,6 +28,7 @@ export const useConversations = () => {
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [documentId, setDocumentId] = useState(null);
 
   const getToken = async () => {
     const currentUser = auth.currentUser;
@@ -81,6 +83,7 @@ export const useConversations = () => {
 
   const handleNewChat = async () => {
     setMessage("");
+    setDocumentId(null);
     const conversationId = await createNewConversation();
     if (!conversationId) alert("Could not create conversation");
   };
@@ -141,15 +144,32 @@ export const useConversations = () => {
     try {
       const freshToken = await getToken();
 
-      const data = await sendMessageApi(
-        conversationId,
-        userMessage,
-        user.id,
-        freshToken
-      );
+      let data;
 
-      if (!data.success) {
-        throw new Error(data.message || "Failed to generate response");
+      if (documentId) {
+        const agentResult = await askAgent({
+          message: userMessage,
+          documentId,
+          userId: user.id,
+          conversationId,
+          token: freshToken,
+        });
+
+        if (!agentResult.success) {
+          throw new Error(agentResult.message || "Failed to generate response");
+        }
+
+        data = {
+          success: true,
+          response: agentResult.answer || agentResult.response || "",
+          type: "text",
+        };
+      } else {
+        data = await sendMessageApi(conversationId, userMessage, user.id, freshToken);
+
+        if (!data.success) {
+          throw new Error(data.message || "Failed to generate response");
+        }
       }
 
       dispatch(
@@ -197,97 +217,18 @@ export const useConversations = () => {
 
   return {
     user,
+    getToken,
     conversations,
     currentConversationId,
     messages,
     message,
     setMessage,
     loading,
+    documentId,
+    setDocumentId,
     handleNewChat,
     selectConversation,
     sendMessage,
     handleDeleteConversation,
   };
-};
-const sendMessage = async () => {
-  if (!message.trim() || loading) return;
-
-  const token = await getToken();
-
-  if (!token || !user) {
-    alert("User not authenticated");
-    return;
-  }
-
-  let conversationId = currentConversationId;
-
-  if (!conversationId) {
-    conversationId = await createNewConversation();
-
-    if (!conversationId) {
-      alert("Could not create conversation");
-      return;
-    }
-  }
-
-  const userMessage = message.trim();
-
-  dispatch(
-    addMessage({
-      role: "user",
-      content: userMessage,
-      type: "text",
-    })
-  );
-
-  setMessage("");
-  setLoading(true);
-
-  try {
-    const freshToken = await getToken();
-
-    const data = await sendMessageApi(
-      conversationId,
-      userMessage,
-      user.id,
-      freshToken
-    );
-
-    if (!data.success) {
-      throw new Error(data.message || "Failed to generate response");
-    }
-
-    // -------------------------
-    // Assistant response
-    // -------------------------
-
-    dispatch(
-      addMessage({
-        role: "assistant",
-        content: data.response || "",
-        type: data.type || "text",
-        image: data.image || null,
-        publicId: data.publicId || null,
-        prompt: data.prompt || null,
-      })
-    );
-
-    await loadConversations();
-
-  } catch (error) {
-    console.error(
-      "Chat error:",
-      error.response?.data || error.message
-    );
-
-    dispatch(
-      addMessage({
-        role: "assistant",
-        content: "Sorry, something went wrong.",
-        type: "text",
-      })
-    );
-  } finally {
-    setLoading(false);
-  }
 };

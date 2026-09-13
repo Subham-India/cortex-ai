@@ -2,6 +2,8 @@ import axios from "axios";
 
 const CHAT_API = "http://localhost:8002/api/chat";
 const CONVERSATION_API = "http://localhost:8002/api/chat/conversations";
+const RAG_API = import.meta.env.VITE_RAG_SERVICE_URL || "http://127.0.0.1:8004";
+const AGENT_API = import.meta.env.VITE_AGENT_SERVICE_URL || "http://127.0.0.1:8003";
 
 export const getConversations = async (userId, token) => {
   try {
@@ -64,6 +66,38 @@ export const deleteConversation = async (conversationId, token) => {
     return response.data;
   } catch (error) {
     console.error("Delete conversation error:", error);
+    throw error;
+  }
+};
+
+export const uploadDocument = async (file, token) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axios.post(`${RAG_API}/documents/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Upload document error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const askAgent = async ({ message, documentId, userId, conversationId, token }) => {
+  try {
+    const response = await axios.post(
+      `${AGENT_API}/api/agent/run`,
+      { message, documentId: documentId || null, userId, conversationId },
+      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Ask agent error:", error.response?.data || error.message);
     throw error;
   }
 };

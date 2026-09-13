@@ -18,12 +18,15 @@ const SUGGESTIONS = [
 const Home = () => {
   const {
     user,
+    getToken,
     conversations,
     currentConversationId,
     messages,
     message,
     setMessage,
     loading,
+    documentId,
+    setDocumentId,
     handleNewChat,
     selectConversation,
     sendMessage,
@@ -43,9 +46,6 @@ const Home = () => {
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden bg-stone-100 text-stone-900 antialiased dark:bg-[#212121] dark:text-gray-100">
 
-        {/* --------------------------------
-            SIDEBAR
-        -------------------------------- */}
         <Sidebar
           user={user}
           conversations={conversations}
@@ -55,17 +55,10 @@ const Home = () => {
           onDeleteConversation={handleDeleteConversation}
         />
 
-        {/* --------------------------------
-            MAIN CONTENT
-        -------------------------------- */}
         <div className="flex min-w-0 flex-1 flex-col">
 
-          {/* --------------------------------
-              HEADER
-          -------------------------------- */}
           <header className="flex h-14 shrink-0 items-center justify-between px-3">
 
-            {/* Sidebar Toggle */}
             <SidebarTrigger
               className="
                 h-9
@@ -80,10 +73,8 @@ const Home = () => {
               "
             />
 
-            {/* Right Side */}
             <div className="flex items-center gap-2">
 
-              {/* Get Pro */}
               <button
                 className="
                   rounded-full
@@ -103,7 +94,6 @@ const Home = () => {
                 Get Pro
               </button>
 
-              {/* User Avatar */}
               <button
                 aria-label="Account"
                 className="
@@ -128,9 +118,6 @@ const Home = () => {
             </div>
           </header>
 
-          {/* --------------------------------
-              CHAT WITH MESSAGES
-          -------------------------------- */}
           {hasMessages ? (
             <>
               <main className="min-h-0 flex-1 overflow-y-auto">
@@ -146,7 +133,6 @@ const Home = () => {
 
               </main>
 
-              {/* Chat Input */}
               <div
                 className="
                   shrink-0
@@ -166,6 +152,9 @@ const Home = () => {
                     setMessage={setMessage}
                     sendMessage={sendMessage}
                     loading={loading}
+                    getToken={getToken}
+                    documentId={documentId}
+                    setDocumentId={setDocumentId}
                   />
 
                   <p className="mt-2 text-center text-xs text-stone-500 dark:text-gray-500">
@@ -177,9 +166,6 @@ const Home = () => {
             </>
           ) : (
 
-            /* --------------------------------
-               EMPTY CHAT
-            -------------------------------- */
             <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-14">
 
               <div className="w-full max-w-3xl">
@@ -206,9 +192,11 @@ const Home = () => {
                   setMessage={setMessage}
                   sendMessage={sendMessage}
                   loading={loading}
+                  getToken={getToken}
+                  documentId={documentId}
+                  setDocumentId={setDocumentId}
                 />
 
-                {/* Suggestions */}
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
 
                   {SUGGESTIONS.map((suggestion) => (
