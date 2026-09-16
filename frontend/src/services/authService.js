@@ -21,7 +21,7 @@ export async function loginWithGoogle() {
 
     // 5. Send token to your backend
     const response = await axios.post(
-      "http://localhost:5000/api/auth/login", // your backend URL
+      "/api/auth/login",
       {},
       {
         headers: {

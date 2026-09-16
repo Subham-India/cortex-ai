@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const CHAT_API = "http://localhost:8002/api/chat";
-const CONVERSATION_API = "http://localhost:8002/api/chat/conversations";
-const RAG_API = import.meta.env.VITE_RAG_SERVICE_URL || "http://127.0.0.1:8004";
-const AGENT_API = import.meta.env.VITE_AGENT_SERVICE_URL || "http://127.0.0.1:8003";
+const CHAT_API = "/api/chat";
+const CONVERSATION_API = "/api/chat/conversations";
+const RAG_API = "/documents";
+const AGENT_API = "/api/agent";
 
 export const getConversations = async (userId, token) => {
   try {
@@ -75,7 +75,7 @@ export const uploadDocument = async (file, token) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await axios.post(`${RAG_API}/documents/upload`, formData, {
+    const response = await axios.post(`${RAG_API}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -91,7 +91,7 @@ export const uploadDocument = async (file, token) => {
 export const askAgent = async ({ message, documentId, userId, conversationId, token }) => {
   try {
     const response = await axios.post(
-      `${AGENT_API}/api/agent/run`,
+      `${AGENT_API}/run`,
       { message, documentId: documentId || null, userId, conversationId },
       { headers: token ? { Authorization: `Bearer ${token}` } : {} }
     );

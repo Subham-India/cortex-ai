@@ -25,6 +25,14 @@ app.use("/api/chat", proxy(process.env.CHAT_SERVICE_URL, {
   proxyReqPathResolver: req => `/api/chat${req.url}`,
 }));
 
+app.use("/api/agent", proxy(process.env.AGENT_SERVICE_URL, {
+  proxyReqPathResolver: req => `/api/agent${req.url}`,
+}));
+
+app.use("/documents", proxy(process.env.RAG_SERVICE_URL, {
+  proxyReqPathResolver: req => `/documents${req.url}`,
+}));
+
 app.listen(port, () => {
   console.log(`API Gateway running on port ${port}`);
 });
