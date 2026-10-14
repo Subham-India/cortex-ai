@@ -1,33 +1,29 @@
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../features/auth/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
   const handleGoogleLogin = async () => {
     try {
-      // 1. Clear any existing Firebase session first
-      await signOut(auth);
-
       const provider = new GoogleAuthProvider();
 
-      // 2. Force Google to always show the account chooser
+      // Always show the Google account chooser
       provider.setCustomParameters({
         prompt: "select_account",
       });
 
       const result = await signInWithPopup(auth, provider);
 
-      // 3. Force a fresh token (don't reuse a cached one)
+      // Fresh token for the backend
       const idToken = await result.user.getIdToken(true);
-
-      console.log("ID Token received for uid:", result.user.uid);
 
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -39,17 +35,22 @@ function Login() {
 
       const data = await response.json();
 
-      console.log("Backend response:", data);
-
       if (data.success) {
-        dispatch(setUser(data.user));
-        console.log("User stored in Redux:", data.user);
+        dispatch(setUser({ ...data.user, displayName: data.user.name }));
         navigate("/home");
       }
     } catch (error) {
       console.error("Google login error:", error);
     }
   };
+
+  // Already logged in (e.g. returning within 7 days) -> skip the login page
+  if (!loading && isAuthenticated) {
+    return <Navigate to="/home" replace />;
+  }
+
+  
+    // ... your existing JSX, unchanged
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black px-4">

@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import axios from "axios";
 
 import { auth } from "./firebase";
 import { setUser, clearUser } from "./features/auth/authSlice";
+import { isSessionExpired } from "./utils/session";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -13,16 +16,34 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        dispatch(clearUser());
+        return;
+      }
+
+      try {
+        if (await isSessionExpired(firebaseUser)) {
+          await signOut(auth);
+          dispatch(clearUser());
+          return;
+        }
+
+        const token = await firebaseUser.getIdToken();
+        const res = await axios.post(
+          "/api/auth/login",
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
         dispatch(
           setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
+            ...res.data.user,
+            displayName: res.data.user.name || firebaseUser.displayName,
           })
         );
-      } else {
+      } catch (err) {
+        console.error("Session restore failed:", err);
         dispatch(clearUser());
       }
     });
@@ -33,7 +54,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route path="/home" element={<Home />} />
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
