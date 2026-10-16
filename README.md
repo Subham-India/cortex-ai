@@ -565,7 +565,6 @@ Cortex AI is under active development. Planned improvements:
 - [ ] **Per-user document storage paths** to avoid filename collisions
 - [ ] **Batch embeddings and PDF validation** (file type and size limits)
 - [ ] **Context window management** for long conversations
-- [ ] **Streaming responses**
 - [ ] Support for DOCX / TXT in RAG
 - [ ] Automated tests and CI
 
