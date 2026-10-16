@@ -5,7 +5,7 @@ import {
   createConversation,
   getConversations,
   getMessages,
-  sendMessage as sendMessageApi,
+  streamMessage,
   askAgent,
   deleteConversation,
 } from "../services/chatService";
@@ -15,6 +15,8 @@ import {
   setCurrentConversation,
   setMessages,
   addMessage,
+  appendToLastMessage,
+  updateLastMessage,
   removeConversation,
   clearMessages,
 } from "../features/conversation/conversationSlice";
@@ -141,12 +143,11 @@ export const useConversations = () => {
     setMessage("");
     setLoading(true);
 
-    try {
+        try {
       const freshToken = await getToken();
 
-      let data;
-
       if (documentId) {
+        // Document Q&A: single answer, not streamed
         const agentResult = await askAgent({
           message: userMessage,
           documentId,
@@ -159,29 +160,71 @@ export const useConversations = () => {
           throw new Error(agentResult.message || "Failed to generate response");
         }
 
-        data = {
-          success: true,
-          response: agentResult.answer || agentResult.response || "",
-          type: "text",
-        };
+        dispatch(
+          addMessage({
+            role: "assistant",
+            content: agentResult.answer || agentResult.response || "",
+            type: "text",
+          })
+        );
       } else {
-        data = await sendMessageApi(conversationId, userMessage, user.id, freshToken);
+        // Normal chat / search / image: streamed
+        let started = false;
+        let pending = "";
+        let raf = null;
 
-        if (!data.success) {
-          throw new Error(data.message || "Failed to generate response");
+        const ensureAssistant = () => {
+          if (started) return;
+          started = true;
+          dispatch(addMessage({ role: "assistant", content: "", type: "text" }));
+        };
+
+        // Batch tokens so React renders once per frame, not once per token
+        const flush = () => {
+          raf = null;
+          if (pending) {
+            dispatch(appendToLastMessage(pending));
+            pending = "";
+          }
+        };
+
+        try {
+          await streamMessage({
+            conversationId,
+            message: userMessage,
+            userId: user.id,
+            token: freshToken,
+            onEvent: (evt) => {
+              if (evt.type === "token") {
+                ensureAssistant();
+                pending += evt.token;
+                if (!raf) raf = requestAnimationFrame(flush);
+              } else if (evt.type === "text") {
+                ensureAssistant();
+                dispatch(updateLastMessage({ content: evt.content }));
+              } else if (evt.type === "image") {
+                ensureAssistant();
+                dispatch(
+                  updateLastMessage({
+                    type: "image",
+                    image: evt.image,
+                    publicId: evt.publicId,
+                    prompt: evt.prompt,
+                    content: "",
+                  })
+                );
+              } else if (evt.type === "error") {
+                throw new Error(evt.message || "Failed to generate response");
+              }
+            },
+          });
+        } finally {
+          if (raf) cancelAnimationFrame(raf);
+          flush();
         }
-      }
 
-      dispatch(
-        addMessage({
-          role: "assistant",
-          content: data.response || "",
-          type: data.type || "text",
-          image: data.image || null,
-          publicId: data.publicId || null,
-          prompt: data.prompt || null,
-        })
-      );
+        if (!started) throw new Error("Empty response");
+      }
 
       await loadConversations();
     } catch (error) {

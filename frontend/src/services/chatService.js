@@ -101,3 +101,57 @@ export const askAgent = async ({ message, documentId, userId, conversationId, to
     throw error;
   }
 };
+export const streamMessage = async ({
+  conversationId,
+  message,
+  userId,
+  token,
+  onEvent,
+  signal,
+}) => {
+  const res = await fetch(`${CHAT_API}/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ conversationId, message, userId }),
+    signal,
+  });
+
+  if (!res.ok || !res.body) {
+    let msg = "Failed to generate response";
+    try {
+      msg = (await res.json()).message || msg;
+    } catch {
+      // not JSON
+    }
+    throw new Error(msg);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n\n");
+    buffer = parts.pop();
+
+    for (const part of parts) {
+      const line = part.split("\n").find((l) => l.startsWith("data: "));
+      if (!line) continue;
+
+      let event;
+      try {
+        event = JSON.parse(line.slice(6));
+      } catch {
+        continue;
+      }
+      onEvent(event);
+    }
+  }
+};

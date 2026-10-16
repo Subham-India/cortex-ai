@@ -38,7 +38,8 @@ const ChatMessages = ({ messages, loading }) => {
 
     scroller.scrollTo({
       top: scroller.scrollHeight,
-      behavior: firstRunRef.current ? "auto" : "smooth",
+      // instant while streaming (smooth on every token jitters)
+      behavior: firstRunRef.current || loading ? "auto" : "smooth",
     });
     firstRunRef.current = false;
   }, [messages, loading]);
@@ -55,7 +56,8 @@ const ChatMessages = ({ messages, loading }) => {
         />
       ))}
 
-      {loading && (
+      {/* typing dots only until the first word of the reply arrives */}
+      {loading && messages[messages.length - 1]?.role === "user" && (
         <div className="flex items-center gap-1.5 py-1" aria-label="Assistant is thinking">
           <span className="h-2 w-2 animate-bounce rounded-full bg-stone-400 [animation-delay:-0.3s]" />
           <span className="h-2 w-2 animate-bounce rounded-full bg-stone-400 [animation-delay:-0.15s]" />

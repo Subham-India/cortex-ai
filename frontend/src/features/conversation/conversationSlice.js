@@ -33,6 +33,15 @@ const conversationSlice = createSlice({
     addMessage: (state, action) => {
       state.messages.push(action.payload);
     },
+        appendToLastMessage: (state, action) => {
+      const last = state.messages[state.messages.length - 1];
+      if (last) last.content = (last.content || "") + action.payload;
+    },
+
+    updateLastMessage: (state, action) => {
+      const last = state.messages[state.messages.length - 1];
+      if (last) Object.assign(last, action.payload);
+    },
 
     removeConversation: (state, action) => {
       state.conversations = state.conversations.filter(
@@ -65,6 +74,8 @@ export const {
   setCurrentConversation,
   setMessages,
   addMessage,
+  appendToLastMessage,
+  updateLastMessage,
   removeConversation,
   setLoading,
   setError,
